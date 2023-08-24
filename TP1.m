@@ -5,6 +5,7 @@ clc; clear; close all;
 exercise = 4; %Cada caso es una estructura propuesta
 onlyBars = false;
 fprintf('Exercise %i.\n',exercise)
+%agrego esto para ver que pasa
 
 switch exercise
         case 1
