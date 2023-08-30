@@ -126,7 +126,7 @@ end
 
 
 % Member material number
-structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3)*2;
+structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3);
 
 
 
@@ -159,8 +159,7 @@ membersCrossSection=[A1  Izz1 Iyy1 Tk1]; % mm2 mm4
 
 %% Material definition
 % Young Modulus | Transverse Modulus | Density  %MPa kg/m3
-membersMaterial=[200000 76923 7800 
-                200000 80000 7872]; %ANSI steel 1005
+membersMaterial=[200000 80000 7800]; %Material del TP
 alpha = 1.26e-5; %1/°C
 Sy = 200; %Mpa
 %% Structure plot
@@ -175,6 +174,8 @@ linearMeshPlot(structuralMembersArray.nodes(:,1:2),structuralJointsArray,'b','Ye
 nElements=size(elementArray.nodes,1);    %Number of elements
 nNodes=size(nodesPositionArray,1);       %Number of nodes
 nTotalDof=max(max(elementArray.dof));    %Number of total dofs
+
+dT = 60; %Temperature difference - The same for all cases
 
 switch exercise 
     case 1
@@ -192,7 +193,6 @@ switch exercise
         
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = 0; %Vector with the elements with thermal load
-        dT = 60; %temperature difference
         pointLoadsArray = pointLoadsArray+thermaLoads;
 
     case 2
@@ -207,7 +207,7 @@ switch exercise
         
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = 0; %Vector with the elements with thermal load
-        dT = 60; %temperature difference
+        
         pointLoadsArray = pointLoadsArray+thermaLoads;
         
     case 3
@@ -216,12 +216,12 @@ switch exercise
         
           % Load definition
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
-        pointLoadsArray(5,6) = 20000/(8*pi/30)*1000; %Nmm
+        pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000-350*9.81; %N
         
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = [9 17 1 10 2]; %Vector with the elements with thermal load
-        dT = 60; %temperature difference
+        
         
         for iElement = thermalElements
             ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT;
@@ -232,8 +232,8 @@ switch exercise
             lambda = RotationMatrix(node1,node2,anode);
             
             Ft = lambda'*[ftLocal;0;0];
-            thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = -Ft;
-            thermaLoads(elementArray.nodes(iElement,2),[1 2 3]) = Ft;
+            thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,1),[1 2 3])-Ft';
+            thermaLoads(elementArray.nodes(iElement,2),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,2),[1 2 3])+Ft';
             
         end
         
@@ -246,25 +246,24 @@ switch exercise
         
           % Load definition
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
-%         pointLoadsArray(4,6) = -20000/(8*pi/30)*1000; %Nmm Se la saco
-%         para probar
+        pointLoadsArray(4,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(4,2) = -600000-350*9.81; %N
         
         thermaLoads = zeros(nNodes,6); %thermal loads 
         thermalElements = [3 7]; %Vector with the elements with thermal load    
-        dT = 0; %temperature difference
+        
         
         for iElement = thermalElements
-            ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT;
+            ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT; %N
             
             node1 = nodesPositionArray(elementArray.nodes(iElement,1),:);
             node2 = nodesPositionArray(elementArray.nodes(iElement,2),:);
-            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:); %auxiliar node
             lambda = RotationMatrix(node1,node2,anode);
             
             Ft = lambda'*[ftLocal;0;0];
-            thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = -Ft;
-            thermaLoads(elementArray.nodes(iElement,2),[1 2 3]) = Ft;
+            thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,1),[1 2 3])-Ft';
+            thermaLoads(elementArray.nodes(iElement,2),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,2),[1 2 3])+Ft';
             
         end
         
@@ -367,7 +366,7 @@ for iElement = 1:nElements
         ct = r(elementArray.crossSection(iElement));
         tau_circular = T*ct/Tk; %Maximo en el radio
    end
-    elementArray.stress(iElement,1) = axialStress+bendingStress;
+    elementArray.stress(iElement,1) = axialStress+bendingStress*sign(axialStress); %max tension in modulo 
     elementArray.stress(iElement,2) = tau_circular;
     elementArray.stress(iElement,3) = sqrt(elementArray.stress(iElement,1)^2+3*elementArray.stress(iElement,2)^2); %Von Mises
     
@@ -386,8 +385,8 @@ totalWeigth = sum(elementArray.weight)/1000; %tons
 fprintf('only bars = %s and plane structure = %s .\n',string(onlyBars),string(planeStructure));
 
 staticSF = Sy*elementArray.stress(:,3).^-1;
-fprintf('Von Mises SF for element:\n');
-disp(staticSF)
+fprintf('Von Mises stress and SF for element:\n');
+disp([[1:nElements]', elementArray.stress(:,3), staticSF])
 fprintf('Nodal Displacements (mm/rad):\n');
 disp(nodalDisplacements);
 fprintf('Total Structure Weight(tons):\n');
@@ -398,4 +397,3 @@ disp(totalWeigth);
 
 
 
-    
