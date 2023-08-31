@@ -170,12 +170,28 @@ linearMeshPlot(structuralMembersArray.nodes(:,1:2),structuralJointsArray,'b','Ye
 % Mesh generation
 [elementArray,nodesPositionArray]=trussFrameMeshGenerator(structuralMembersArray,structuralJointsArray);
 
+
 % Problem parameters
 nElements=size(elementArray.nodes,1);    %Number of elements
 nNodes=size(nodesPositionArray,1);       %Number of nodes
 nTotalDof=max(max(elementArray.dof));    %Number of total dofs
 
-dT = 60; %Temperature difference - The same for all cases
+%structure weight
+for i = 1:nElements
+    
+    n1 = nodesPositionArray(elementArray.nodes(i,1),:);
+    n2 = nodesPositionArray(elementArray.nodes(i,2),:);
+    L = norm(n2-n1);
+    % Structure Weight
+    volume = L*membersCrossSection(elementArray.crossSection(i),1)/(1000*1000*1000); %m3
+    weight = volume*membersMaterial(elementArray.material(i),3);%kg
+    elementArray.weight(i) = weight; %kg
+    
+end
+
+%Boundary conditions and Load Cases
+
+dT = 0; %Temperature difference - The same for all cases
 
 switch exercise 
     case 1
@@ -350,31 +366,34 @@ for iElement = 1:nElements
         Iyy = membersCrossSection(elementArray.crossSection(iElement),3);
         Tk= membersCrossSection(elementArray.crossSection(iElement),4);
         
-        x = 0;    
-        Bbending = [-6/L^2+12*x/L^3, -4/L+6*x/L^2, 6/L^2-12*x/L^3, -2/L+6*x/L^2];
+        positions = [0 L];
         
-       
-        Mz = membersMaterial(1)*Izz*Bbending*[localDisplacements(1,2), localDisplacements(1,6), localDisplacements(2,2), localDisplacements(2,6)]';
-        My = membersMaterial(1)*Iyy*Bbending*[localDisplacements(1,3), -localDisplacements(1,5), localDisplacements(2,3), -localDisplacements(2,5)]';
-        
-        M = sqrt(My^2+Mz^2); %SOLO PARA CIRCULAR 
-        bendingStress = M*r(elementArray.crossSection(iElement))/Izz;
+        for i = 1:2 
+                x = positions(i);
+                Bbending = [-6/L^2+12*x/L^3, -4/L+6*x/L^2, 6/L^2-12*x/L^3, -2/L+6*x/L^2];
 
-        %Torsion
-        %tau_rectangular = 3*T/(8*a*b^2)*(1+0.6095*(b/a)+0.8865*(b/a)^2-1.8023*(b/a)^3+0.91*(b/a)^4);
-        T = membersMaterial(2)*Tk*(localDisplacements(2,4)-localDisplacements(1,4))/L;
-        ct = r(elementArray.crossSection(iElement));
-        tau_circular = T*ct/Tk; %Maximo en el radio
+                Mz = membersMaterial(1)*Izz*Bbending*[localDisplacements(1,2), localDisplacements(1,6), localDisplacements(2,2), localDisplacements(2,6)]';
+                My = membersMaterial(1)*Iyy*Bbending*[localDisplacements(1,3), -localDisplacements(1,5), localDisplacements(2,3), -localDisplacements(2,5)]';
+
+                M = sqrt(My^2+Mz^2); %SOLO PARA CIRCULAR 
+                bendingStress(i) = M*r(elementArray.crossSection(iElement))/Izz;
+
+                %Torsion
+                %tau_rectangular = 3*T/(8*a*b^2)*(1+0.6095*(b/a)+0.8865*(b/a)^2-1.8023*(b/a)^3+0.91*(b/a)^4);
+                T = membersMaterial(2)*Tk*(localDisplacements(2,4)-localDisplacements(1,4))/L;
+                ct = r(elementArray.crossSection(iElement));
+                tau_circular(i) = T*ct/Tk; %Maximo en el radio
+        end
    end
+    [val, pos] = max(abs(bendingStress));
+    bendingStress = bendingStress(pos);
+    [val, pos] = max(abs(tau_circular));
+    tau_circular = tau_circular(pos);
     elementArray.stress(iElement,1) = axialStress+bendingStress*sign(axialStress); %max tension in modulo 
     elementArray.stress(iElement,2) = tau_circular;
     elementArray.stress(iElement,3) = sqrt(elementArray.stress(iElement,1)^2+3*elementArray.stress(iElement,2)^2); %Von Mises
     
-    % Structure Weight
-    volume = L*membersCrossSection(elementArray.crossSection(iElement),1)/(1000*1000*1000); %m3
-    weight = volume*membersMaterial(elementArray.material(iElement),3);%kg
-    elementArray.weight(iElement) = weight; %kg
-    
+        
 end
 
 %total structure weight
