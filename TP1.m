@@ -8,27 +8,51 @@ fprintf('Exercise %i.\n',exercise)
 
 switch exercise
         case 1
-            
-            structuralJointsArray=[0, 0, 0
-                                   0, 10.1, 0
-                                   0, 15, 0
-                                   5.5, 15, 0
-                                   10.8, 12, 0
-                                   5.5, 10.1, 0                                   
-                                   0 5 0
-                                   2, 5.3458, 0]*1000; 
-        
-                        % Input of members connecting joints and which dof they connect
-                        % Begin | End | Cross Section Orientation
-            structuralMembersArray.nodes=[7 6 8
-                                          3 4 8
-                                          4 5 8
-                                          5 6 8
-                                          2 6 8
-                                          3 6 8
-                                          4 6 8
-                                          6 1 8];
-            planeStructure = true;
+            structuralJointsArray=[0 6 0% in[mm]
+                               0 4 0
+                               0 6 5
+                               0 4 5
+                               3 5 2
+                               6 5 2
+                               11 5.3 2
+                               0 6 -3
+                               0 4 -3
+                               6 6 5
+                               6 6 0
+                               6 4 5
+                               6 4 0
+                               6 4 2
+                        2.55 2.55 .55]*1000; % for direction only
+                    aux=length(structuralJointsArray);
+            % Input of members connecting joints and which dof they connect
+            % Begin | End | Cross Section Orientation
+            structuralMembersArray.nodes=[1 5 aux
+                                      2 5 aux
+                                      3 5 aux
+                                      4 5 aux
+                                      1 6 aux
+                                      2 6 aux
+                                      3 6 aux
+                                      4 6 aux
+                                      5 6 aux
+                                      1 11 aux
+                                      2 13 aux
+                                      3 10 aux
+                                      4 12 aux
+                                      5 10 aux
+                                      5 11 aux
+                                      6 7 aux
+                                      11 7 aux
+                                      10 7 aux
+                                      8 11 aux
+                                      9 13 aux
+                                      12 7 aux
+                                      13 7 aux
+                                      13 11 aux
+                                      5 12 aux
+                                      5 13 aux
+                                      10 12 aux];
+            planeStructure = false;
             hollowBar = false;
         case 2 
             structuralJointsArray=[ 0 10 0          % In [mm]
@@ -198,14 +222,14 @@ switch exercise
 
         % Boundary conditions
         boundaryConditionsArray = false(nNodes,6);    % Boundary conditions array true=fixed
-        boundaryConditionsArray([1,2,3,7],:) = true;
-        % Rotations elimination
+        boundaryConditionsArray([1 2 3 4 8 9],:) = true;
+        
+          
+
         % Load definition
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
-        pointLoadsArray(5,6) = 20000/(8*pi/30)*1000; %Nmm
-        pointLoadsArray(5,2) = -600000-350*9.81; %N
-        pointLoadsArray(5,4) = -0.3*(+600000+350*9.81)*1000; %Nmm
-        
+        pointLoadsArray(7,5) = 20000/(8*pi/30)*1000; %Nmm
+        pointLoadsArray(7,3) = -600000-350*9.81; %N
         
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = 0; %Vector with the elements with thermal load
