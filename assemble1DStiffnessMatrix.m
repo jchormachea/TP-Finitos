@@ -36,16 +36,16 @@ for iElement = 1:nElements
     projectionMatrix = blkdiag(lambdaProjectionMatrix,lambdaProjectionMatrix,lambdaProjectionMatrix,lambdaProjectionMatrix);
     
     % Coefficients
-    X  = membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,1),1)/elementLength;
-    S  = membersMaterial(elementArray.material(iElement,1),2)*membersCrossSection(elementArray.crossSection(iElement,4),4)/elementLength;
-    Y1 = 12*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,2),2)/elementLength^3;
-    Y2 = 6*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,2),2)/elementLength^2;
-    Y3 = 4*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,2),2)/elementLength^1;
-    Y4 = 2*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,2),2)/elementLength^1;
-    Z1 = 12*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,3),3)/elementLength^3;
-    Z2 = 6*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,3),3)/elementLength^2;
-    Z3 = 4*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,3),3)/elementLength^1;
-    Z4 = 2*membersMaterial(elementArray.material(iElement,1),1)*membersCrossSection(elementArray.crossSection(iElement,3),3)/elementLength^1;
+    X  = membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),1)/elementLength;
+    S  = membersMaterial(elementArray.material(iElement),2)*membersCrossSection(elementArray.crossSection(iElement),4)/elementLength;
+    Y1 = 12*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),2)/elementLength^3;
+    Y2 = 6*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),2)/elementLength^2;
+    Y3 = 4*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),2)/elementLength^1;
+    Y4 = 2*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),2)/elementLength^1;
+    Z1 = 12*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),3)/elementLength^3;
+    Z2 = 6*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),3)/elementLength^2;
+    Z3 = 4*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),3)/elementLength^1;
+    Z4 = 2*membersMaterial(elementArray.material(iElement),1)*membersCrossSection(elementArray.crossSection(iElement),3)/elementLength^1;
     
     elementalStiffnessMatrix=[  X   0   0  0   0   0 -X   0   0  0   0   0
                                 0  Y1   0  0   0  Y2  0 -Y1   0  0   0  Y2

@@ -32,8 +32,8 @@ for iMember=1:nStructuralMembers
     elementArray.dof(nElements,:)=[structuralMembersArray.nodes(iMember,1)*[6 6 6 6 6 6]-[5 4 3 2 1 0] structuralMembersArray.nodes(iMember,2)*[6 6 6 6 6 6]-[5 4 3 2 1 0]];
     elementArray.nodes(nElements,:)=[structuralMembersArray.nodes(iMember,1:2)];
     elementArray.auxiliarPoint(nElements)=[structuralMembersArray.nodes(iMember,3)];
-    elementArray.crossSection(nElements,:)=structuralMembersArray.crossSection(iMember,:);
-    elementArray.material(nElements,:)=structuralMembersArray.material(iMember,:);
+    elementArray.crossSection(nElements)=structuralMembersArray.crossSection(iMember);
+    elementArray.material(nElements)=structuralMembersArray.material(iMember);
 end
 
 return
