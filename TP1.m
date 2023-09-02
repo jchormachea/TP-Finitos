@@ -54,21 +54,34 @@ switch exercise
                                       10 12 aux];
             planeStructure = false;
             hollowBar = false;
-        case 2 
-            structuralJointsArray=[ 0 10 0          % In [mm]
+        case 2
+            structuralJointsArray=[ 0 10 0          % [mm]
                         0 15 0
-                        6 10 0
-                        11 13 0
-                        2 3.1415 0]*1000; 
-        
-                        % Input of members connecting joints and which dof they connect
-                        % Begin | End | Cross Section Orientation
-            structuralMembersArray.nodes=[1 3 5
-                                          2 3 5
-                                          2 4 5
-                                          3 4 5];
-            planeStructure = true;
+                        5.8 10.3 0
+                        11, 12, 1.3
+                        11,12,1
+                        0 10 2
+                        0 15 2
+                        5.8 10.3 2
+                        2, 5.3458, 7.6589]*1000;
+            aux = length(structuralJointsArray);          
+            structuralMembersArray.nodes=[1 3 aux
+                                          2 3 aux
+                                          2 5 aux %thermal
+                                          3 5 aux
+                                          6 8 aux
+                                          7 8 aux
+                                          7 4 aux %thermal
+                                          8 4 aux
+                                          1 8 aux
+                                          3 8 aux
+                                          7 3 aux
+                                          4 5 aux
+                                          3 4 aux];
+                                          
+            planeStructure = false;
             hollowBar = false;
+        
         case 3
             structuralJointsArray=[0 5 0
                                    0, 10.1, 0
@@ -211,19 +224,21 @@ for i = 1:nElements
     weight = volume*membersMaterial(elementArray.material(i),3);%kg
     elementArray.weight(i) = weight; %kg
     
+    
 end
 
 %Boundary conditions and Load Cases
 
 dT = 0; %Temperature difference - The same for all cases
+g = 9.81; %m/s^2
+acceleration = 0.2*g;%m/s^2
 
 switch exercise 
     case 1
 
         % Boundary conditions
         boundaryConditionsArray = false(nNodes,6);    % Boundary conditions array true=fixed
-        boundaryConditionsArray([1 2 3 4 8 9],:) = true;
-        
+        boundaryConditionsArray([1 2 3 4 8 9],:) = true;       
           
 
         % Load definition
@@ -231,24 +246,66 @@ switch exercise
         pointLoadsArray(7,5) = 20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(7,3) = -600000-350*9.81; %N
         
+        %acceleration
+        for i = 1:nElements
+            fAccelerationLocal = elementArray.weight(i)*acceleration;
+            node1 = nodesPositionArray(elementArray.nodes(i,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(i,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
+            lambda = RotationMatrix(node1,node2,anode);
+            
+            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
+            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
+        end
+        
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = 0; %Vector with the elements with thermal load
         pointLoadsArray = pointLoadsArray+thermaLoads;
 
     case 2
         boundaryConditionsArray = false(nNodes,6);    % Boundary conditions array true=fixed
-        boundaryConditionsArray([1 2],:) = true;
+% %         boundaryConditionsArray([1 2 5 6],[1 2 3]) = true; %Apoyos fijos
+        boundaryConditionsArray([1 2 6 7],:) = true; %Empotramientos
         
           % Load definition
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
-        pointLoadsArray(4,6) = 20000/(8*pi/30)*1000; %Nmm
-        pointLoadsArray(4,2) = -600000-350*9.81; %Nmm
-        pointLoadsArray(4,4) = 0.3*(+600000+350*9.81)*1000; %Nmm
+        pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
+        pointLoadsArray(5,2) = -600000; %N
+        pointLoadsArray(4,2) = -350*9.81; %N
         
-        thermaLoads = zeros(nNodes,6); %thermal loads  
-        thermalElements = 0; %Vector with the elements with thermal load
+        
+        for i = 1:nElements
+            fAccelerationLocal = elementArray.weight(i)*acceleration;
+            node1 = nodesPositionArray(elementArray.nodes(i,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(i,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
+            lambda = RotationMatrix(node1,node2,anode);
+            
+            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
+            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
+        end
+        
+        thermaLoads = zeros(nNodes,6); %thermal loads 
+        thermalElements = [3 7]; %Vector with the elements with thermal load    
+        
+        
+        for iElement = thermalElements
+            ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT; %N
+            node1 = nodesPositionArray(elementArray.nodes(iElement,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(iElement,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:);    
+            lambda = RotationMatrix(node1,node2,anode);
+            
+            Ft = lambda'*[ftLocal;0;0];
+            thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,1),[1 2 3])-Ft';
+            thermaLoads(elementArray.nodes(iElement,2),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,2),[1 2 3])+Ft';
+            
+        end
         
         pointLoadsArray = pointLoadsArray+thermaLoads;
+     
         
     case 3
         boundaryConditionsArray = false(nNodes,6);    % Boundary conditions array true=fixed
@@ -259,17 +316,29 @@ switch exercise
         pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000-350*9.81; %N
         
+        for i = 1:nElements
+            fAccelerationLocal = elementArray.weight(i)*acceleration;
+            node1 = nodesPositionArray(elementArray.nodes(i,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(i,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
+            lambda = RotationMatrix(node1,node2,anode);
+            
+            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration'; %N
+            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
+        end
+        
         thermaLoads = zeros(nNodes,6); %thermal loads  
         thermalElements = [9 17 1 10 2]; %Vector with the elements with thermal load
         
         
         for iElement = thermalElements
             ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT;
-            
             node1 = nodesPositionArray(elementArray.nodes(iElement,1),:);
             node2 = nodesPositionArray(elementArray.nodes(iElement,2),:);
-            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:);    
             lambda = RotationMatrix(node1,node2,anode);
+            
             
             Ft = lambda'*[ftLocal;0;0];
             thermaLoads(elementArray.nodes(iElement,1),[1 2 3]) = thermaLoads(elementArray.nodes(iElement,1),[1 2 3])-Ft';
@@ -289,16 +358,27 @@ switch exercise
         pointLoadsArray(4,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(4,2) = -600000-350*9.81; %N
         
+        for i = 1:nElements
+            fAccelerationLocal = elementArray.weight(i)*acceleration;
+            node1 = nodesPositionArray(elementArray.nodes(i,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(i,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
+            lambda = RotationMatrix(node1,node2,anode);
+            
+            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
+            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
+        end
+        
         thermaLoads = zeros(nNodes,6); %thermal loads 
         thermalElements = [3 7]; %Vector with the elements with thermal load    
         
         
         for iElement = thermalElements
             ftLocal = alpha*membersMaterial(1)*membersCrossSection(elementArray.crossSection(iElement),1)*dT; %N
-            
             node1 = nodesPositionArray(elementArray.nodes(iElement,1),:);
             node2 = nodesPositionArray(elementArray.nodes(iElement,2),:);
-            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:); %auxiliar node
+            anode = structuralJointsArray(elementArray.auxiliarPoint(iElement),:);    
             lambda = RotationMatrix(node1,node2,anode);
             
             Ft = lambda'*[ftLocal;0;0];
@@ -413,7 +493,7 @@ for iElement = 1:nElements
     bendingStress = bendingStress(pos);
     [val, pos] = max(abs(tau_circular));
     tau_circular = tau_circular(pos);
-    elementArray.stress(iElement,1) = axialStress+bendingStress*sign(axialStress); %max tension in modulo 
+    elementArray.stress(iElement,1) = axialStress+bendingStress*sign(axialStress); %max stress (absolute)
     elementArray.stress(iElement,2) = tau_circular;
     elementArray.stress(iElement,3) = sqrt(elementArray.stress(iElement,1)^2+3*elementArray.stress(iElement,2)^2); %Von Mises
     
@@ -424,7 +504,7 @@ end
 
 totalWeigth = sum(elementArray.weight)/1000; %tons
 
-%information
+%print information
 fprintf('only bars = %s and plane structure = %s .\n',string(onlyBars),string(planeStructure));
 
 staticSF = Sy*elementArray.stress(:,3).^-1;
