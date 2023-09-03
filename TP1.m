@@ -254,7 +254,7 @@ switch exercise
             anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
             lambda = RotationMatrix(node1,node2,anode);
             
-            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            fAcceleration = [0;0;fAccelerationLocal];
             pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
             pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
         end
@@ -282,7 +282,7 @@ switch exercise
             anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
             lambda = RotationMatrix(node1,node2,anode);
             
-            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            fAcceleration = [0;0;fAccelerationLocal];
             pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
             pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
         end
@@ -323,7 +323,7 @@ switch exercise
             anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
             lambda = RotationMatrix(node1,node2,anode);
             
-            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            fAcceleration = [0;0;fAccelerationLocal];
             pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration'; %N
             pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
         end
@@ -365,7 +365,7 @@ switch exercise
             anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);    
             lambda = RotationMatrix(node1,node2,anode);
             
-            fAcceleration = lambda'*[fAccelerationLocal;0;0];
+            fAcceleration = [0;0;fAccelerationLocal];
             pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration' ; %N
             pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration'; %N
         end
