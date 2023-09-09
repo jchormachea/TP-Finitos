@@ -2,7 +2,7 @@
 clc; clear; close all; 
 
 %% Structure definition
-exercise = 4; %input('Elegir estructura: '); %Cada caso es una estructura propuesta
+exercise = 2; %input('Elegir estructura: '); %Cada caso es una estructura propuesta
 onlyBars = false;
 fprintf('Exercise %i.\n',exercise)
 
