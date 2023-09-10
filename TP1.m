@@ -498,7 +498,11 @@ fprintf('Nodal Displacements (mm/rad):\n');
 disp(nodalDisplacements);
 fprintf('Total Structure Weight(tons):\n');
 disp(totalWeigth);
-
+hold off
+magnificationScale = 100;
+massNode = 4;
+Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale);
+Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale);
 
 
 
