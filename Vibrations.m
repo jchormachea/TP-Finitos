@@ -1,4 +1,4 @@
-function  Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale)
+function [naturalFrequencies] = Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale)
 %Funcion que hace las vibraciones
 hold on
 membersMaterial(3)=membersMaterial(3)/(1000^4);                          

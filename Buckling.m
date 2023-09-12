@@ -1,4 +1,4 @@
-function  Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale)
+function  [filteredBucklingLoadFactor] = Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale)
 %Funcion que hace el buckling
 hold on
 % Connected Dof                          
