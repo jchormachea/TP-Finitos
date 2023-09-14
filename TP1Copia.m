@@ -25,6 +25,7 @@ switch exercise
                         0,10.3,1]*1000;
             aux = length(structuralJointsArray)-1; %anteultimo
             aux2 = length(structuralJointsArray); %ultimo
+            AuxiliarNodes = 2;
             structuralMembersArray.nodes=[1 3 2
                                           2 3 1
                                           2 4 aux %thermal 3
@@ -43,6 +44,8 @@ switch exercise
                                           ];
                                           
             planeStructure = false;
+            thermalElements = [3 7 12]; %Vector with the elements with thermal load 
+            
         case 2
             structuralJointsArray=[ 0 10 0          % [mm]
                         0 15 0
@@ -65,7 +68,7 @@ switch exercise
                                           1 8 aux
                                           3 8 aux
                                           7 3 aux
-                                          4 5 aux
+                                          4 5 aux 
                                           3 5 aux];
                                           
             planeStructure = false;
@@ -132,17 +135,9 @@ switch exercise
 
 end
 
-% Connected Dof                          
-structuralMembersArray.dof = true(size(structuralMembersArray.nodes,1),12);
-
-% Number of elements in member
-structuralMembersArray.refinement = ones(size(structuralMembersArray.nodes,1));
-
 % Member cross section number
 structuralMembersArray.crossSection = ones(size(structuralMembersArray.nodes,1),4);
 
-% Member material number
-structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3);
 
 
 
@@ -151,11 +146,11 @@ structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3);
 Amax = 0.25*0.25*1000*1000; %Area maxima en mm2 --> rmax = 140mm
 
 %circular bar
-r = 30; %mm
-Izr30 = pi*r.^4/4;%mm4
-Iyr30 = Izr30;%mm4
-Ar30 = pi*r.^2;
-Tkr30 = Izr30*2;
+r = 40; %mm
+Izr40 = pi*r.^4/4;%mm4
+Iyr40 = Izr40;%mm4
+Ar40 = pi*r.^2;
+Tkr40 = Izr40*2;
 %circular bar r80
 r = 80; %mm
 Izr80 = pi*r.^4/4;%mm4
@@ -181,7 +176,7 @@ IyC120t15 = a^3*b/12-(a-2*t)^3*(b-2*t)/12;%mm4
 AC120t15 = b*a-(b-2*t)*(a-2*t);
 a = a/2; b = b/2; %para la formula de Tk
 TkC120t15 = a*b^3*(16/3-3.36*b/a*(1-b^4/(12*a^4)))-(a-t)*(b-t)^3*(16/3-3.36*(b-t)/(a-t)*(1-(b-t)^4/(12*(a-t)^4)));%mm4 (2*t^2*(a-t)^2*(b-t)^2)/(a*t+b*t-t^2-t^2)
-TkC120t15 = 18702997.496897; %mm4 según Nx
+% TkC120t15 = 18702997.496897; %mm4 según Nx
 
 % Seccion cuadrada l20 t20
 t = 20; %mm
@@ -192,11 +187,11 @@ IyC120t20 = a^3*b/12-(a-2*t)^3*(b-2*t)/12;%mm4
 AC120t20 = b*a-(b-2*t)*(a-2*t);
 a = a/2; b = b/2; %para la formula de Tk
 TkC120t20 = a*b^3*(16/3-3.36*b/a*(1-b^4/(12*a^4)))-(a-t)*(b-t)^3*(16/3-3.36*(b-t)/(a-t)*(1-(b-t)^4/(12*(a-t)^4)));%mm4 (2*t^2*(a-t)^2*(b-t)^2)/(a*t+b*t-t^2-t^2)
-TkC110t20 = 22317010.477737; %mm4 según Nx
+% TkC120t20 = 22317010.477737; %mm4 según Nx
 
 
 % Area | Inertia Moment in P123 plane | Inertia Moment orthogonal to P123 plane | Torsional Stiffness
-membersCrossSection=[Ar30  Izr30 Iyr30 Tkr30
+membersCrossSection=[Ar40  Izr40 Iyr40 Tkr40
                      AC120t15 IzC120t15 IyC120t15 TkC120t15
                      Ar80  Izr80 Iyr80 Tkr80
                      Ar125t20  Izr125t20 Iyr125t20 Tkr125t20
@@ -208,16 +203,29 @@ structuralMembersArray.circular = ones(size(structuralMembersArray.nodes,1),1); 
 switch exercise
     case 1
         structuralMembersArray.crossSection(:,:) = 3; %circular r80        
-        structuralMembersArray.crossSection(12,:) = 4; %circular r125 t20
-        structuralMembersArray.crossSection([9 11],:) = 1; %circular r30
+        structuralMembersArray.crossSection([12 10],:) = 4; %circular r125 t20
+        structuralMembersArray.crossSection([9 11],:) = 1; %circular r40
         
-        structuralMembersArray.crossSection([2 6 10],:) = 2; %cuadrada 120t15
-        structuralMembersArray.circular([2 6 10]) = 2; %cuadrada 120t15
+        structuralMembersArray.crossSection([2 6],:) = 2; %cuadrada 120t15
+        structuralMembersArray.circular([2 6]) = 2; %cuadrada C120t15
                 
-        structuralMembersArray.crossSection([1 5],:) = 5; %cuadrada 120t20
-        structuralMembersArray.circular([1 5]) = 2; %cuadrada 120t20      
+        structuralMembersArray.crossSection([1 5],:) = 5; %cuadrada C120t20
+        structuralMembersArray.circular([1 5]) = 2; %cuadrada C120t20      
 end   
-                  
+
+% Number of elements in member
+structuralMembersArray.refinement = ones(size(structuralMembersArray.nodes,1))*8;
+NewJoints = structuralJointsArray;
+NewNodes = structuralMembersArray.nodes;
+[structuralJointsArray, structuralMembersArray, thermalElements] = MeshRefinement(structuralJointsArray,structuralMembersArray,AuxiliarNodes, thermalElements);
+
+% Connected Dof                          
+structuralMembersArray.dof = true(size(structuralMembersArray.nodes,1),12);
+
+% Member material number
+structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3);
+
+
 %% Material definition
 % Young Modulus | Transverse Modulus | Density  %MPa kg/m3
 membersMaterial=[200000 80000 7800]; %Material del TP
@@ -253,7 +261,7 @@ end
 
 %Boundary conditions and Load Cases
 
-dT = 0; %Temperature difference - The same for all cases
+dT = 60; %Temperature difference - The same for all cases
 g = 9.81; %m/s^2
 acceleration = [0,-1,0.2]*g;%m/s^2
 
@@ -261,10 +269,9 @@ switch exercise
     case 1
 
         boundaryConditionsArray = false(nNodes,6);    % Boundary conditions array true=fixed
-% %         boundaryConditionsArray([1 2 5 6],[1 2 3]) = true; %Apoyos fijos
         boundaryConditionsArray([1 2 6 7 9],:) = true; %Empotramientos
         
-          % Load definition
+        % Load definition
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
         pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000; %N
@@ -273,15 +280,34 @@ switch exercise
         
         
         for i = 1:nElements
-            fAccelerationLocal = elementArray.weight(i)*acceleration/2;
+
+% %             fAccelerationLocal = elementArray.weight(i)*acceleration/2;
+% %             
+% %             fAcceleration = fAccelerationLocal;
+% %             
+% %             pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration; %N
+% %             pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration; %N
             
-            fAcceleration = fAccelerationLocal;
-            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration ; %N
-            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration; %N
+            node1 = nodesPositionArray(elementArray.nodes(i,1),:);
+            node2 = nodesPositionArray(elementArray.nodes(i,2),:);
+            anode = structuralJointsArray(elementArray.auxiliarPoint(i),:);
+            lambda = RotationMatrix(node1,node2,anode);
+            Long = [1 0 0]*elementArray.length;
+            LocalLong = lambda'*Long';
+            fAcceleration = elementArray.weight(i)*acceleration; %qL
+            MAccleleration(1)=0;
+            MAccleleration(2) = fAcceleration(3)*LocalLong(1)/12;
+            MAccleleration(3) = -fAcceleration(2)*LocalLong(1)/12;
+            MAcceleration1 = -MAccleleration;
+            MAcceleration2 = MAccleleration;
+            pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,1),[1 2 3]) + fAcceleration/2; %N
+            pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) = pointLoadsArray(elementArray.nodes(i,2),[1 2 3]) + fAcceleration/2; %N
+            pointLoadsArray(elementArray.nodes(i,1),[4 5 6]) = pointLoadsArray(elementArray.nodes(i,1),[4 5 6]) + MAcceleration1; %Nmm
+            pointLoadsArray(elementArray.nodes(i,2),[4 5 6]) = pointLoadsArray(elementArray.nodes(i,2),[4 5 6]) + MAcceleration2; %Nmm
         end
         
         thermaLoads = zeros(nNodes,6); %thermal loads 
-        thermalElements = [3 7 12]; %Vector with the elements with thermal load   
+          
         
         
         for iElement = thermalElements
@@ -508,7 +534,7 @@ for iElement = 1:nElements
                 if structuralMembersArray.circular(iElement) == 1 
                     r = sqrt(A/pi);
                     if elementArray.crossSection(iElement) == 4 %tubo
-                        r = 130;
+                        r = 125;
                     end
                     
                     Mz = membersMaterial(1)*Izz*Bbending*[localDisplacements(1,2), localDisplacements(1,6), localDisplacements(2,2), localDisplacements(2,6)]';
@@ -581,13 +607,15 @@ z = [0 0 0 0]*1000;
 line(x,y,z,'Color','#4DBEEE','LineWidth',1)
 hold off
 magnificationScale = 100;
-
+min(staticSF)
 [naturalFrequencies] = Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale);
 [filteredBucklingLoadFactor] = Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale);
+pos = filteredBucklingLoadFactor>0;
+BucklingPosit = filteredBucklingLoadFactor(pos);
 fprintf('Natural Frequencies\n')
-disp(naturalFrequencies)
+disp(naturalFrequencies([1,2,3]))
 fprintf('Buckling Load Factor\n')
-disp(filteredBucklingLoadFactor)
+disp(BucklingPosit([1,2,3]))
 
 
 
