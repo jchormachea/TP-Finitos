@@ -27,16 +27,16 @@ switch exercise
             aux2 = length(structuralJointsArray); %ultimo
             structuralMembersArray.nodes=[1 3 2
                                           2 3 1
-                                          2 4 aux %thermal
+                                          2 4 aux %thermal 3
                                           3 4 aux
                                           6 8 7
                                           7 8 6
-                                          7 5 2 %thermal
+                                          7 5 2 %thermal 7
                                           8 5 aux
                                           1 8 aux
                                           3 8 aux2
                                           7 3 aux
-                                          4 5 aux %thermal
+                                          4 5 aux %thermal 12
                                           5 3 aux
                                           8 9 aux
                                           3 9 aux
@@ -56,11 +56,11 @@ switch exercise
             aux = length(structuralJointsArray);          
             structuralMembersArray.nodes=[1 3 aux
                                           2 3 aux
-                                          2 4 aux %thermal
+                                          2 4 aux %thermal 3
                                           3 4 aux
                                           6 8 aux
                                           7 8 aux
-                                          7 5 aux %thermal
+                                          7 5 aux %thermal 7
                                           8 5 aux
                                           1 8 aux
                                           3 8 aux
@@ -84,23 +84,23 @@ switch exercise
                                    5.5, 10.1, 2 
                                    2, 5.3458, 7.6589]*1000;
             aux = length(structuralJointsArray);          
-            structuralMembersArray.nodes=[3 4 aux %thermal
-                                          4 5 aux %thermal
+            structuralMembersArray.nodes=[3 4 aux %thermal 1 
+                                          4 5 aux %thermal 2
                                           5 6 aux
                                           5 6 aux
                                           6 1 aux
                                           2 6 aux
                                           3 6 aux
                                           4 6 aux
-                                          9 10 aux %thermal
-                                          10 5 aux %thermal
+                                          9 10 aux %thermal 9
+                                          10 5 aux %thermal 10
                                           10 6 aux
                                           5 11 aux
                                           11 7 aux
                                           8 11 aux
                                           9 11 aux
                                           10 11 aux
-                                          9 4 aux %thermal
+                                          9 4 aux %thermal 17
                                           2 10 aux
                                           7 6 aux];
             planeStructure = false;
@@ -117,11 +117,11 @@ switch exercise
             aux = length(structuralJointsArray);          
             structuralMembersArray.nodes=[1 3 aux
                                           2 3 aux
-                                          2 4 aux %thermal
+                                          2 4 aux %thermal 3
                                           3 4 aux
                                           5 7 aux
                                           6 7 aux
-                                          6 4 aux %thermal
+                                          6 4 aux %thermal 7
                                           7 4 aux
                                           1 7 aux
                                           3 7 aux
@@ -140,8 +140,6 @@ structuralMembersArray.refinement = ones(size(structuralMembersArray.nodes,1));
 
 % Member cross section number
 structuralMembersArray.crossSection = ones(size(structuralMembersArray.nodes,1),4);
-
-
 
 % Member material number
 structuralMembersArray.material = ones(size(structuralMembersArray.nodes,1),3);
@@ -165,14 +163,14 @@ Iyr80 = Izr80;%mm4
 Ar80 = pi*r.^2;
 Tkr80 = Izr80*2;
 
-%circular bar r130 t10
-ro = 130; %mm
-t = 10;
+%circular bar r125 t20
+ro = 125; %mm
+t = 20;
 ri = ro-t; %mm
-Izr130t10 = pi*(ro^4-ri^4)/4;%mm4
-Iyr130t10 = Izr130t10;%mm4
-Ar130t10 = pi*(ro^2-ri^2);
-Tkr130t10 = Izr130t10*2;
+Izr125t20 = pi*(ro^4-ri^4)/4;%mm4
+Iyr125t20 = Izr125t20;%mm4
+Ar125t20 = pi*(ro^2-ri^2);
+Tkr125t20 = Izr125t20*2;
 
 % Seccion cuadrada l20 t15
 t = 15; %mm
@@ -201,7 +199,7 @@ TkC110t20 = 22317010.477737; %mm4 según Nx
 membersCrossSection=[Ar60  Izr60 Iyr60 Tkr60
                      AC120t15 IzC120t15 IyC120t15 TkC120t15
                      Ar80  Izr80 Iyr80 Tkr80
-                     Ar130t10  Izr130t10 Iyr130t10 Tkr130t10
+                     Ar125t20  Izr125t20 Iyr125t20 Tkr125t20
                      AC120t20 IzC120t20 IyC120t20 TkC120t20
                      ]; % mm2 mm4
 
@@ -210,19 +208,16 @@ structuralMembersArray.circular = ones(size(structuralMembersArray.nodes,1),1); 
 switch exercise
     case 1
         structuralMembersArray.crossSection(:,:) = 3; %circular r80        
-        structuralMembersArray.crossSection(12,:) = 4; %circular r130 t10
+        structuralMembersArray.crossSection(12,:) = 4; %circular r125 t20
         structuralMembersArray.crossSection([9 11],:) = 1; %circular r60
         
         structuralMembersArray.crossSection([2 6 10],:) = 2; %cuadrada 120t15
         structuralMembersArray.circular([2 6 10]) = 2; %cuadrada 120t15
                 
         structuralMembersArray.crossSection([1 5],:) = 5; %cuadrada 120t20
-        structuralMembersArray.circular([1 5]) = 2; %cuadrada 120t20
-        
-        
+        structuralMembersArray.circular([1 5]) = 2; %cuadrada 120t20      
 end   
-                 
-                 
+                  
 %% Material definition
 % Young Modulus | Transverse Modulus | Density  %MPa kg/m3
 membersMaterial=[200000 80000 7800]; %Material del TP
@@ -251,14 +246,13 @@ for i = 1:nElements
     % Structure Weight
     volume = L*membersCrossSection(elementArray.crossSection(i),1)/(1000*1000*1000); %m3
     weight = volume*membersMaterial(elementArray.material(i),3);%kg
-    elementArray.weight(i) = weight; %kg
-    
+    elementArray.weight(i) = weight; %kg  
     
 end
 
 %Boundary conditions and Load Cases
 
-dT = 0; %Temperature difference - The same for all cases
+dT = 60; %Temperature difference - The same for all cases
 g = 9.81; %m/s^2
 acceleration = [0,-1,0.2]*g;%m/s^2
 
@@ -274,7 +268,7 @@ switch exercise
         pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000; %N
         pointLoadsArray(4,2) = -350*g; %N
-        massNode = 4; %donde está el motor
+        massNode = [4,0]; %donde está el motor
         
         
         for i = 1:nElements
@@ -314,7 +308,7 @@ switch exercise
         pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000; %N
         pointLoadsArray(4,2) = -350*g; %N
-        massNode = 4; %donde está el motor
+        massNode = [4,350]; %donde está el motor
         
         
         for i = 1:nElements
@@ -353,7 +347,7 @@ switch exercise
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
         pointLoadsArray(5,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(5,2) = -600000-350*9.81; %N
-        massNode = 5;
+        massNode = [5, 350];
         
         for i = 1:nElements
             fAccelerationLocal = elementArray.weight(i)*acceleration/2;
@@ -392,7 +386,7 @@ switch exercise
         pointLoadsArray = zeros(nNodes,6);     % Point load nodal value for each direction
         pointLoadsArray(4,6) = -20000/(8*pi/30)*1000; %Nmm
         pointLoadsArray(4,2) = -600000-350*9.81; %N
-        massNode = 4;
+        massNode = [4, 350];
         
         for i = 1:nElements
             fAccelerationLocal = elementArray.weight(i)*acceleration/2;
@@ -578,6 +572,7 @@ disp([[1:nElements]',elementArray.stress(:,1),elementArray.stress(:,4),elementAr
 fprintf('Nodal Displacements (mm/rad):\n');
 format long
 disp(nodalDisplacements);
+format bank
 fprintf('Total Structure Weight(tons): %d \n', totalWeigth);
 x = [6 6 11 11]*1000;
 y = [0 10 10 15]*1000;
@@ -586,10 +581,12 @@ line(x,y,z,'Color','#4DBEEE','LineWidth',1)
 hold off
 magnificationScale = 100;
 
-
 [naturalFrequencies] = Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale);
 [filteredBucklingLoadFactor] = Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale);
-
+fprintf('Natural Frequencies\n')
+disp(naturalFrequencies)
+fprintf('Buckling Load Factor\n')
+disp(filteredBucklingLoadFactor)
 
 
 

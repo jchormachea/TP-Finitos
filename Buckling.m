@@ -1,22 +1,21 @@
 function  [filteredBucklingLoadFactor] = Buckling(structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,pointLoadsArray,magnificationScale)
 %Funcion que hace el buckling
 hold on
-% Connected Dof                          
- structuralMembersArray.dof=true(size(structuralMembersArray.nodes,1),12);
-
-% Number of elements in member
-structuralMembersArray.refinement=ones(size(structuralMembersArray.nodes,1));
-
-% Member cross section number
-structuralMembersArray.crossSection=ones(size(structuralMembersArray.nodes,1));
-
-% Member material number
-structuralMembersArray.material=ones(size(structuralMembersArray.nodes,1));
+% % Connected Dof                          
+%  structuralMembersArray.dof=true(size(structuralMembersArray.nodes,1),12);
+% 
+% % Number of elements in member
+% structuralMembersArray.refinement=ones(size(structuralMembersArray.nodes,1));
+% 
+% % Member cross section number
+% structuralMembersArray.crossSection=ones(size(structuralMembersArray.nodes,1));
+% 
+% % Member material number
+% structuralMembersArray.material=ones(size(structuralMembersArray.nodes,1));
 
                     
 % Cross sections definition
 % Area | Inertia Moment in P123 plane | Inertia Moment orthogonal to P123 plane | Torsional Stiffness
-% membersCrossSection=[6980 16011520 108608400 278528]; % I Beam Section
 % membersCrossSection=[A1  Izz1 Iyy1 Tk1]; % mm2 mm4
 
 % Material definition

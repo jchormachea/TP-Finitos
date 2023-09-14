@@ -1,24 +1,25 @@
-function [naturalFrequencies] = Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,massNode,magnificationScale)
+function [naturalFrequencies] = Vibrations(onlyBars,structuralJointsArray,structuralMembersArray,planeStructure,membersCrossSection,membersMaterial,boundaryConditionsArray,puntualMassNode,magnificationScale)
 %Funcion que hace las vibraciones
 hold on
 membersMaterial(3)=membersMaterial(3)/(1000^4);                          
+puntualMass = puntualMassNode(2)/1000;%Kg/1000
+massNode = puntualMassNode(1);
+
 % Connected Dof                          
-structuralMembersArray.dof=true(size(structuralMembersArray.nodes,1),12);
+% structuralMembersArray.dof=true(size(structuralMembersArray.nodes,1),12);
 
 % Number of elements in member
-structuralMembersArray.refinement=ones(size(structuralMembersArray.nodes,1));
+% structuralMembersArray.refinement=ones(size(structuralMembersArray.nodes,1));
 
 % Member cross section number
-structuralMembersArray.crossSection=ones(size(structuralMembersArray.nodes,1));
+% structuralMembersArray.crossSection=ones(size(structuralMembersArray.nodes,1));
 
 % Member material number
-structuralMembersArray.material=ones(size(structuralMembersArray.nodes,1));
+% structuralMembersArray.material=ones(size(structuralMembersArray.nodes,1));
                     
 
 % Cross sections definition
 % Area | Inertia Moment in P123 plane | Inertia Moment orthogonal to P123 plane | Torsional Stiffness
-% membersCrossSection=[6980 16011520 108608400 278528]; % I Beam Section
-% membersCrossSection=[6980 16011520 108608400 278528]; % I Beam Section
 % membersCrossSection=[A1  Izz1 Iyy1 Tk1]; % mm2 mm4
 
 % Material definition
@@ -38,8 +39,6 @@ linearMeshPlot(structuralMembersArray.nodes(:,1:2),structuralJointsArray,'b','Ye
 nElements=size(elementArray.nodes,1);    %Number of elements
 nNodes=size(nodesPositionArray,1);       %Number of nodes
 nTotalDof=max(max(elementArray.dof));    %Number of total dofs
-
-
         
 
 %% Resonant modes determination
@@ -53,7 +52,6 @@ nTotalDof=max(max(elementArray.dof));    %Number of total dofs
 
 sz = size(massMatrix);
 puntualMassMatrix(sz(1),sz(2)) = 0;
-puntualMass = 350/1000 ;%Kg/1000
 puntualMassMatrix(6*(massNode-1)+1,6*(massNode-1)+1) = puntualMassMatrix(6*(massNode-1)+1,6*(massNode-1)+1)+ puntualMass;
 puntualMassMatrix(6*(massNode-1)+2,6*(massNode-1)+2) = puntualMassMatrix(6*(massNode-1)+2,6*(massNode-1)+2)+ puntualMass;
 puntualMassMatrix(6*(massNode-1)+3,6*(massNode-1)+3) = puntualMassMatrix(6*(massNode-1)+3,6*(massNode-1)+3)+ puntualMass;
